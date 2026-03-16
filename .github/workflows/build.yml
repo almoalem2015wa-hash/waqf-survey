@@ -1,0 +1,33 @@
+name: Build APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: android-actions/setup-android@v2
+      - name: Install Cordova
+        run: npm install -g cordova
+      - name: Build APK
+        run: |
+          cordova create WaqfApp com.waqf.survey "المسح الوقفي"
+          cp index.html WaqfApp/www/index.html
+          cp config.xml WaqfApp/config.xml
+          cd WaqfApp
+          cordova platform add android@12
+          cordova build android -- --packageType=apk
+      - uses: actions/upload-artifact@v3
+        with:
+          name: WaqfSurvey-APK
+          path: WaqfApp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
