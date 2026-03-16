@@ -8,24 +8,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - uses: android-actions/setup-android@v3
+
       - name: Install Cordova
         run: npm install -g cordova
+
+      - name: Create config.xml
+        run: |
+          cat > config.xml << 'EOF'
+          <?xml version='1.0' encoding='utf-8'?>
+          <widget id="com.waqf.survey" version="1.0.0"
+            xmlns="http://www.w3.org/ns/widgets"
+            xmlns:cdv="http://cordova.apache.org/ns/1.0">
+            <name>المسح الوقفي</name>
+            <content src="index.html" />
+            <access origin="*" />
+            <allow-navigation href="*" />
+            <allow-intent href="*" />
+            <platform name="android">
+              <preference name="android-minSdkVersion" value="22" />
+              <preference name="android-targetSdkVersion" value="33" />
+            </platform>
+            <preference name="EnableViewportScale" value="true" />
+          </widget>
+          EOF
+
       - name: Build APK
         run: |
-          cordova create WaqfApp com.waqf.survey "المسح الوقفي"
+          cordova create WaqfApp com.waqf.survey "WaqfSurvey"
           cp index.html WaqfApp/www/index.html
           cp config.xml WaqfApp/config.xml
           cd WaqfApp
           cordova platform add android@12
           cordova build android -- --packageType=apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: WaqfSurvey-APK
